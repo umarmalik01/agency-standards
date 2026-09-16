@@ -5,7 +5,7 @@ on:
     branches:
       - tarjeeh-ugc-ai
     paths:
-      - '.bootstrap/project.tar.gz.b64'
+      - '.bootstrap/part_*.b64'
       - '.github/workflows/materialize-tarjeeh-ugc.yml'
   workflow_dispatch:
 
@@ -22,13 +22,18 @@ jobs:
           ref: tarjeeh-ugc-ai
           fetch-depth: 0
 
-      - name: Decode and verify permanent project archive
+      - name: Reassemble, decode and verify permanent project archive
         shell: bash
         run: |
           set -euo pipefail
-          base64 -d .bootstrap/project.tar.gz.b64 > /tmp/tarjeeh-ugc-ai.tar.gz
+          test -f .bootstrap/part_00.b64
+          test -f .bootstrap/part_01.b64
+          test -f .bootstrap/part_02.b64
+          test -f .bootstrap/part_03.b64
+          test -f .bootstrap/part_04.b64
+          cat .bootstrap/part_00.b64 .bootstrap/part_01.b64 .bootstrap/part_02.b64 .bootstrap/part_03.b64 .bootstrap/part_04.b64 | base64 -d > /tmp/tarjeeh-ugc-ai.tar.gz
           echo 'bf033709ec543e3d682b351e29c35afce0ad30d6a1828e8125b9bbd50f9d1a7d  /tmp/tarjeeh-ugc-ai.tar.gz' | sha256sum -c -
-          tar -tzf /tmp/tarjeeh-ugc-ai.tar.gz >/tmp/tarjeeh-ugc-ai-files.txt
+          tar -tzf /tmp/tarjeeh-ugc-ai.tar.gz > /tmp/tarjeeh-ugc-ai-files.txt
           test -s /tmp/tarjeeh-ugc-ai-files.txt
 
       - name: Replace branch root with Tarjeeh UGC AI project
