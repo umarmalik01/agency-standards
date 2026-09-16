@@ -6,6 +6,7 @@ on:
       - tarjeeh-ugc-ai
     paths:
       - '.bootstrap/project.tar.gz.b64'
+      - '.github/workflows/materialize-tarjeeh-ugc.yml'
   workflow_dispatch:
 
 permissions:
@@ -34,9 +35,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Remove the old agency-standards branch payload and the bootstrap archive.
           git rm -r --ignore-unmatch CLAUDE.md PROJECT-INSTRUCTIONS.md README.md .gitignore .bootstrap
-          # Keep this workflow so the materialization procedure is documented/re-runnable manually.
           tar -xzf /tmp/tarjeeh-ugc-ai.tar.gz -C .
           git add -A
 
