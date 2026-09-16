@@ -1,0 +1,17 @@
+# Free/open-source only. Never add a pay-per-generation SDK here.
+torch
+torchvision
+diffusers>=0.36.0
+transformers>=4.49.0
+accelerate>=1.1.0
+safetensors
+ftfy
+imageio[ffmpeg]
+imageio-ffmpeg
+opencv-python-headless
+numpy
+soundfile
+kokoro>=0.9.4
+openai-whisper
+gradio>=4.44.0
+spaces

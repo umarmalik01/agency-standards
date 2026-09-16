@@ -1,4 +1,36 @@
+# secrets — never commit
 .env
-*.zip
-node_modules/
+*.pem
+*.key
+hf_token*
+.huggingface/
+
+# generated client assets and renders
+projects/*/
+!projects/.gitkeep
+*.mp4
+*.mov
+*.wav
+*.mp3
+!examples/**/*.mp4
+
+# model weights and third-party checkouts
+third_party/
+models/
+*.safetensors
+*.ckpt
+*.pth
+*.bin
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+
+# os
 .DS_Store
+Thumbs.db

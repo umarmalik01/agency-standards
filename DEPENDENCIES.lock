@@ -1,0 +1,5 @@
+# Immutable upstreams used by bootstrap.sh
+SuperCMO https://github.com/SupercmoHQ/superCMO-skills.git a6dd060ed46132e1944b1dd38981cb9ffcc42fc8 Apache-2.0
+auto-edit-video-skill https://github.com/natyang1234/auto-edit-video-skill.git 934f081c737028b537a8e40b8286c635a783297f MIT
+Wan2.2 model Wan-AI/Wan2.2-TI2V-5B-Diffusers
+MuseTalk https://github.com/TMElyralab/MuseTalk optional

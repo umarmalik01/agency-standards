@@ -1,0 +1,28 @@
+# tarjeeh-ugc-ai — open-source only.
+# NOTHING pay-per-generation belongs in this file. scripts/audit_no_paid_apis.py enforces it.
+
+# --- video generation (Wan 2.2 TI2V-5B) ---
+torch>=2.4.0
+torchvision
+diffusers>=0.36.0
+transformers>=4.49.0
+accelerate>=1.1.0
+safetensors
+ftfy
+
+# --- media io ---
+imageio>=2.34.0
+imageio-ffmpeg
+opencv-python-headless
+pillow
+numpy
+
+# --- voice (local) ---
+kokoro>=0.9.4
+soundfile
+
+# --- transcription / captions (local, open-source Whisper) ---
+openai-whisper
+
+# --- config / tooling ---
+pyyaml

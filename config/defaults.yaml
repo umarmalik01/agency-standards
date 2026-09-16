@@ -1,0 +1,59 @@
+# tarjeeh-ugc-ai defaults. A job file overrides any of these per run.
+default_platform: meta
+default_aspect_ratio: "9:16"
+default_duration_seconds: 20
+default_variations: 3
+default_language: English
+
+video_backend: wan2.2-ti2v-5b
+tts_backend: kokoro
+lip_sync_backend: musetalk
+transcription_backend: whisper
+editor: ffmpeg
+
+# Absolute. No stage may fall back to a billable provider; see POLICY_NO_PAID_APIS.md.
+paid_api_fallback: false
+
+models:
+  wan:
+    model_id: Wan-AI/Wan2.2-TI2V-5B-Diffusers
+    # Generate at 720x1280 and upscale at assembly - native 1080x1920 diffusion OOMs free GPUs.
+    generation_width: 720
+    generation_height: 1280
+    fps: 24
+    num_inference_steps: 30
+    guidance_scale: 5.0
+    max_scene_seconds: 5
+    offload: model            # model | sequential | none
+  kokoro:
+    voice: af_heart
+    lang_code: a
+    sample_rate: 24000
+  whisper:
+    model_size: base
+
+export:
+  width: 1080
+  height: 1920
+  fps: 24
+  video_codec: libx264
+  audio_codec: aac
+  crf: 18
+
+captions:
+  words_per_card_min: 2
+  words_per_card_max: 5
+  font_size: 68
+  baseline_px: 1180
+  unsafe_top_fraction: 0.14
+  unsafe_bottom_fraction: 0.22
+  unsafe_right_fraction: 0.14
+
+cta:
+  default_text: Order Now
+  seconds_on_screen: 3
+
+compute:
+  # Order in which free compute is tried. Nothing billable may be appended.
+  backends: [local_gpu, hf_zerogpu, kaggle_free_gpu]
+  on_exhausted: FREE_GPU_QUOTA_EXHAUSTED

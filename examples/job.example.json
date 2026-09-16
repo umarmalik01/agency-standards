@@ -1,0 +1,35 @@
+{
+  "product_name": "",
+  "product_image": "projects/<job_id>/product/master_front.jpg",
+  "country": "UAE",
+  "audience": "",
+  "creator": {
+    "gender": "female",
+    "age_range": "25-35",
+    "appearance_direction": "Filipino",
+    "location": "modern Dubai apartment",
+    "hairstyle": "",
+    "outfit": "",
+    "lighting": "natural window daylight",
+    "camera_style": "handheld iPhone"
+  },
+  "language": "English",
+  "platform": "Meta",
+  "duration": 20,
+  "aspect_ratio": "9:16",
+  "style": "natural handheld iPhone UGC",
+  "offer": "",
+  "cta": "Order Now",
+  "variations": 3,
+  "supplied_facts": {
+    "_comment": "Every factual claim in the ad must trace to a key here. Anything absent stays a [SLOT] in the script and is reported back as a fact needed. Never invent these.",
+    "price": null,
+    "currency": "AED",
+    "retailer": null,
+    "discount": null,
+    "fragrance_notes": null,
+    "longevity_hours": null,
+    "size_ml": null,
+    "reviews": null
+  }
+}
