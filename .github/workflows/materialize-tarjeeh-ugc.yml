@@ -1,0 +1,54 @@
+name: Materialize Tarjeeh UGC AI
+
+on:
+  push:
+    branches:
+      - tarjeeh-ugc-ai
+    paths:
+      - '.bootstrap/project.tar.gz.b64'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: tarjeeh-ugc-ai
+          fetch-depth: 0
+
+      - name: Decode and verify permanent project archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d .bootstrap/project.tar.gz.b64 > /tmp/tarjeeh-ugc-ai.tar.gz
+          echo 'bf033709ec543e3d682b351e29c35afce0ad30d6a1828e8125b9bbd50f9d1a7d  /tmp/tarjeeh-ugc-ai.tar.gz' | sha256sum -c -
+          tar -tzf /tmp/tarjeeh-ugc-ai.tar.gz >/tmp/tarjeeh-ugc-ai-files.txt
+          test -s /tmp/tarjeeh-ugc-ai-files.txt
+
+      - name: Replace branch root with Tarjeeh UGC AI project
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Remove the old agency-standards branch payload and the bootstrap archive.
+          git rm -r --ignore-unmatch CLAUDE.md PROJECT-INSTRUCTIONS.md README.md .gitignore .bootstrap
+          # Keep this workflow so the materialization procedure is documented/re-runnable manually.
+          tar -xzf /tmp/tarjeeh-ugc-ai.tar.gz -C .
+          git add -A
+
+      - name: Commit permanent source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Materialize permanent Tarjeeh UGC AI source tree'
+          git push origin HEAD:tarjeeh-ugc-ai
