@@ -3,7 +3,7 @@
 Zero-cost UGC video advertising system. Give it a product photo and a brief; it produces
 9:16 advertisements for Meta, Instagram Reels, TikTok and YouTube Shorts.
 
-**Every generation stage runs on open weights on hardware you already have.** No pay-per-generation
+**Every generation stage runs on open weights on free/local compute.** No pay-per-generation
 provider is integrated, and none may be added — see [`POLICY_NO_PAID_APIS.md`](POLICY_NO_PAID_APIS.md).
 
 ## The stack
@@ -16,17 +16,26 @@ provider is integrated, and none may be added — see [`POLICY_NO_PAID_APIS.md`]
 | Lip-sync (optional) | MuseTalk |
 | Captions | local open-source Whisper word timings |
 | Edit / encode | FFmpeg → H.264 + AAC, 1080×1920 |
-| Compute | local GPU → free HF ZeroGPU Space → free Kaggle notebook |
+| Primary compute | Kaggle free GPU notebook |
+| Secondary compute | local GPU → free HF ZeroGPU Space |
 
-## Quick start
+## Fastest way to make a video now
 
-```bash
-./bootstrap.sh                      # free/open-source deps only; no API keys
-python scripts/check_setup.py       # READY / PARTIALLY READY / NOT READY
-python scripts/audit_no_paid_apis.py
-```
+Use `kaggle/tarjeeh_ugc_ai.ipynb` as the primary renderer.
 
-Then, in Claude Code:
+1. Kaggle → Create/New Notebook → Import Notebook.
+2. Upload `kaggle/tarjeeh_ugc_ai.ipynb`.
+3. Settings → Accelerator → GPU (T4 x2 if offered), Internet On.
+4. Upload the product image as a Kaggle input/dataset.
+5. Edit Cell 1 only.
+6. Run All.
+7. Download `/kaggle/working/tarjeeh-ugc-output/final_v1.mp4` etc.
+
+Full instructions: [`docs/KAGGLE.md`](docs/KAGGLE.md).
+
+## Claude Code usage
+
+Tell Claude:
 
 ```
 Create 3 UGC Meta ads for this perfume.
@@ -38,66 +47,76 @@ Language: English
 Duration: 20 seconds
 CTA: Order Now
 Use the attached product photo.
+Prepare the ad plan for the Kaggle primary renderer.
+Do not use any paid API.
 ```
 
-The `tarjeeh-ugc` skill takes it from product analysis through to the final MP4s.
+Claude prepares the campaign/script/storyboard/prompts. Kaggle performs the actual GPU rendering.
+The notebook can also run standalone with built-in claim-safe generic concepts when no `adplan.json` is supplied.
+
+## Project restore / audit
+
+```bash
+./bootstrap.sh
+python scripts/check_setup.py
+python scripts/audit_no_paid_apis.py
+```
 
 ## Layout
 
 ```
-.claude/skills/        custom master skill is committed; pinned third-party skills are restored by bootstrap.sh
+.claude/skills/        permanent Claude skills
   tarjeeh-ugc/           master orchestration skill
-  planning-campaigns/    ) restored from pinned SuperCMO commit (Apache-2.0),
-  writing-ad-copy/       ) text-only, audited: no paid generation calls
-  writing-video-scripts/ )
-  writing-video-prompts/ ) patched to target Wan only
-  analyzing-products/    )
-  analyzing-brand/       )
-  auto-edit-video/       restored from pinned natyang1234 commit (MIT)
+  planning-campaigns/    text-only advertising planning
+  writing-ad-copy/
+  writing-video-scripts/
+  writing-video-prompts/ Wan-targeted prompts
+  analyzing-products/
+  analyzing-brand/
+  auto-edit-video/       restored from pinned upstream
 backend/               Wan generation, voice, lip-sync, job schema
-hf-space/              free ZeroGPU Gradio Space
-kaggle/                free Kaggle GPU fallback notebook
-scripts/               assemble_ad · qa_video · captions · audit · check_setup
+hf-space/              optional free ZeroGPU Gradio Space
+kaggle/                PRIMARY free Kaggle GPU renderer
+scripts/               assembly, QA, audit, setup checks
 config/defaults.yaml   central configuration
 examples/              job file template
-projects/<job_id>/     per-campaign working directory (gitignored)
+projects/<job_id>/     campaign working directory (gitignored)
 ```
 
 ## How a 20-second ad is built
 
-Wan generates ~3–5 seconds per diffusion pass, so **a 20s ad is composed from 4–6 shots**, never
-produced in one pass. Scenes are generated at 720×1280 (free-tier VRAM) and upscaled to 1080×1920
-at assembly.
+Wan generates short clips, so **a 20-second ad is composed from multiple 3–5 second scenes**, never
+one huge diffusion pass. The Kaggle renderer starts at 704×1280 and steps down automatically on GPU
+memory pressure, then exports the final ad at 1080×1920.
 
-Two consistency rules do most of the work:
+The final 3-second CTA is budgeted **inside** the requested ad duration. A 20-second brief therefore
+produces a 20-second file, not a 23-second file.
 
-- **Product** — whenever a real product photo exists, scenes run **image-to-video from that
-  photograph**. No text prompt reconstructs a real label, so text-to-video is used only for
-  environment B-roll with no product and no face in frame.
-- **Creator** — one master creator reference image per campaign, reused into every scene with a
-  fixed seed. She is described once and referenced thereafter.
+## Product and creator consistency
+
+- **Product:** real product photography is used as the image-to-video reference when product accuracy matters.
+- **Creator:** optionally supply one `CREATOR_IMAGE`; it is reused as the creator reference for creator shots.
+- Without a creator image, the free renderer defaults to product-focused / voice-over UGC instead of inventing a stable human identity.
 
 ## The factual-claims rule
 
-The system **never invents** prices, discounts, offers, fragrance notes, ingredients, longevity,
-medical or performance claims, reviews, ratings or any business fact. Facts come from
-`supplied_facts` in the job file. Where a claim is needed and the fact is missing, the script keeps
-a visible `[SLOT: …]` and the run reports it back as a fact needed. Placeholders are blocked from
-reaching voice synthesis.
+The system never invents prices, discounts, offers, fragrance notes, ingredients, longevity,
+medical/performance claims, reviews, ratings, or business facts. Claude-prepared plans should carry
+only facts you supplied. The standalone Kaggle scripts intentionally use subjective/generic language.
 
 ## When free GPU runs out
 
-The run returns `FREE_GPU_QUOTA_EXHAUSTED`, preserves the job and every scene already rendered, and
-stops. Resume later, or switch to `kaggle/tarjeeh_ugc_ai.ipynb`. There is no paid fallback by
-design.
+The run returns `FREE_GPU_QUOTA_EXHAUSTED`, preserves completed scenes, and stops. Resume later.
+There is **no paid fallback** by design.
 
 ## Licences
 
 Vendored skills and dependencies are documented in
-[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). Model weights carry their own licences —
-review Wan's and MuseTalk's terms before commercial use.
-
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). Model weights carry their own licences; review
+Wan and MuseTalk terms before commercial use.
 
 ## Pinned dependency restore
 
-`./bootstrap.sh` restores the audited third-party Claude skills at immutable commits: SuperCMO `a6dd060ed46132e1944b1dd38981cb9ffcc42fc8` and auto-edit-video `934f081c737028b537a8e40b8286c635a783297f`. The project-specific `tarjeeh-ugc` skill and all backend code are committed directly here.
+`./bootstrap.sh` restores the audited third-party Claude skills at immutable commits: SuperCMO
+`a6dd060ed46132e1944b1dd38981cb9ffcc42fc8` and auto-edit-video
+`934f081c737028b537a8e40b8286c635a783297f`.
