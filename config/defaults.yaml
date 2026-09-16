@@ -17,14 +17,16 @@ paid_api_fallback: false
 models:
   wan:
     model_id: Wan-AI/Wan2.2-TI2V-5B-Diffusers
-    # Generate at 720x1280 and upscale at assembly - native 1080x1920 diffusion OOMs free GPUs.
-    generation_width: 720
+    generation_width: 704
     generation_height: 1280
     fps: 24
-    num_inference_steps: 30
+    num_inference_steps: 24
     guidance_scale: 5.0
     max_scene_seconds: 5
-    offload: model            # model | sequential | none
+    offload: model
+    oom_fallbacks:
+      - {width: 640, height: 1152, steps: 20}
+      - {width: 576, height: 1024, steps: 16}
   kokoro:
     voice: af_heart
     lang_code: a
@@ -54,6 +56,7 @@ cta:
   seconds_on_screen: 3
 
 compute:
-  # Order in which free compute is tried. Nothing billable may be appended.
-  backends: [local_gpu, hf_zerogpu, kaggle_free_gpu]
+  # Kaggle is the primary zero-cost renderer. Nothing billable may be appended.
+  backends: [kaggle_free_gpu, local_gpu, hf_zerogpu]
+  primary: kaggle_free_gpu
   on_exhausted: FREE_GPU_QUOTA_EXHAUSTED
